@@ -1,0 +1,214 @@
+
+services:
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    hostname: zookeeper
+    container_name: zookeeper-2
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - default
+    volumes:
+    - zookeeper-data:/var/lib/zookeeper/data
+    - zookeeper-log:/var/lib/zookeeper/log
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    hostname: kafka
+    container_name: kafka-2
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LOG_FLUSH_INTERVAL_MESSAGES: 10000
+      KAFKA_LOG_FLUSH_INTERVAL_MS: 1000
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      default:
+        aliases:
+          - kafka
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui-2
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    networks:
+      - default
+
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:7.0.1
+    ports:
+      - "8083:8083"
+    depends_on:
+      - kafka
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka:9092
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: "connect-cluster"
+      CONNECT_CONFIG_STORAGE_TOPIC: "connect-configs"
+      CONNECT_OFFSET_STORAGE_TOPIC: "connect-offsets"
+      CONNECT_STATUS_STORAGE_TOPIC: "connect-status"
+      CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_VALUE_CONVERTER: "org.apache.kafka.connect.json.JsonConverter"
+      CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect"
+      CONNECT_LOG4J_ROOT_LOGLEVEL: "INFO"
+      CONNECT_PLUGIN_PATH: "/usr/share/java,/etc/kafka-connect/jars"
+  producer:
+    container_name: producer-2
+    build:
+      context: ./producer
+      dockerfile: Dockerfile
+    environment:
+      KAFKA_BROKER: kafka:9092
+    volumes:
+      - .:/app
+    networks:
+      - default
+    command: tail -f /dev/null
+  
+  
+  consumer:
+    container_name: consumer-2
+    build:
+      context: ./consumer
+      dockerfile: Dockerfile
+    environment:
+      KAFKA_BROKER: kafka:9092
+    volumes:
+      - .:/app
+    networks:
+      - default
+    command: tail -f /dev/null 
+
+  postgres:
+    image: postgres:15
+    container_name: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: stockdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: stockdb
+      MB_DB_PORT: 5432
+      MB_DB_USER: postgres
+      MB_DB_PASS: 123456
+      MB_DB_HOST: postgres
+    depends_on:
+      - postgres
+
+  # spark:
+  #   image: bitnami/spark:3.5
+  #   container_name: spark
+  #   environment:
+  #     SPARK_MODE: master
+  #   ports:
+  #     - "8084:8084"
+  #     - "7077:7077"
+  #   volumes:
+  #     - .:/opt/bitnami/spark/app
+  #   depends_on:
+  #     - kafka    
+  #   networks:
+  #     - default
+  spark-stream:
+    build: 
+      context: ./stream_data
+      dockerfile: Dockerfile
+    container_name: spark-stream
+    depends_on:
+      - kafka
+      - cassandra
+    environment:
+      - APP_NAME=StockStreamingApp
+      - CASSANDRA_HOST=cassandra
+      - CASSANDRA_PORT=9042
+      - CASSANDRA_USER=cassandra
+      - CASSANDRA_PASSWORD=cassandra
+      - CASSANDRA_CONNECTOR_VERSION=3.0.0
+      - KAFKA_CONNECTOR_VERSION=3.4.0
+      - SCALA_VERSION=2.12
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC=du_an_dau
+      - JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+    tty: true
+    networks:
+      - default
+    ports:
+      - "4040:4040"  # Spark UI port
+    # 👇 Optional: Run manually instead
+    command: tail -f /dev/null
+    volumes:
+      - ./stream_data:/app
+
+  cassandra:
+    image: cassandra:4.0
+    ports:
+      - "9042:9042"
+    environment:
+      CASSANDRA_START_RPC: "true"
+      CASSANDRA_RPC_PORT: 9042
+      CASSANDRA_BROADCAST_ADDRESS: cassandra
+      CASSANDRA_LISTEN_ADDRESS: cassandra
+      CASSANDRA_SEEDS: cassandra
+      CASSANDRA_CLUSTER_NAME: "Test Cluster"
+      CASSANDRA_DC: "dc1"
+      CASSANDRA_RACK: "rack1"
+    networks:
+      - default
+
+
+networks:
+  default:
+    external: true
+    name: your-network # tên mạng đã được tạo trước đó
+
+volumes:
+  zookeeper-data:
+    driver: local
+  zookeeper-log:
+    driver: local
+  kafka-data:
+    driver: local
+  pgdata:
+    driver: local

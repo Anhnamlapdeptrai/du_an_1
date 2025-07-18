@@ -1,0 +1,19 @@
+FROM python:3.11-slim
+
+# Cài các công cụ hệ thống cơ bản
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Tạo thư mục làm việc
+WORKDIR /app
+
+# Copy file requirements nếu có
+COPY requirements.txt .
+
+# Cài thư viện Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy toàn bộ mã nguồn vào container
+COPY .. .

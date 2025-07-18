@@ -1,0 +1,18 @@
+services:
+  scrapy:
+    container_name: scrapy-2
+    build:
+      context: .
+      dockerfile: Dockerfile.scrapy
+    volumes:
+      - ..:/app
+    working_dir: /app
+    command: tail -f /dev/null
+    networks:
+      - default
+
+
+networks:
+  default:
+    external: true
+    name: your-network # tên mạng đã được tạo trước đó

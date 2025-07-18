@@ -1,0 +1,3 @@
+2025-07-18 10:31:38:create_spark_session:ERROR:❌ Couldn't create Spark session: [JAVA_GATEWAY_EXITED] Java gateway process exited before sending its port number.
+2025-07-18 10:31:38:create_initial_dataframe:ERROR:❌ Couldn't create initial DataFrame: 'NoneType' object has no attribute 'readStream'
+2025-07-18 10:31:38:write_streaming_data:ERROR:❌ Failed to create initial DataFrame. Exiting.
