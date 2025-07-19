@@ -53,8 +53,8 @@ def create_spark_session():
 def create_initial_dataframe(spark_session):
     try:
         # 📥 Lấy biến từ .env
-        kafka_bootstrap_servers = os.getenv("kafka:9092")
-        kafka_topic = os.getenv("du_an_dau")
+        kafka_bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS")
+        kafka_topic = os.getenv("KAFKA_TOPIC")
 
         # 🧩 Định nghĩa schema
         schema = StructType([
@@ -103,8 +103,7 @@ def create_initial_dataframe(spark_session):
     
         # 🚀 Hiển thị thông tin DataFrame
         df.printSchema()
-        df.show()
-        logging.info(f"✅ Initial DataFrame created with {df.count()} records.")
+        logging.info(f"✅ Initial streaming DataFrame schema created successfully.")
         return df
 
     except Exception as e:
