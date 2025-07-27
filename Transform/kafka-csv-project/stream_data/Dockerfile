@@ -1,24 +1,26 @@
 FROM python:3.11-slim
 
-# 🛠️ Cài công cụ hệ thống + Java
+# ☕️ Cài Java Runtime (JRE) thay vì JDK cho nhẹ và không lỗi
 RUN apt-get update && apt-get install -y \
-    openjdk-11-jdk \
-    build-essential \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+    openjdk-17-jre-headless \
+    netcat-openbsd \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# 🌍 Thiết lập biến môi trường Java cho PySpark
-ENV JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+
+# Thiết lập JAVA_HOME để PySpark nhận Java
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV PATH="$JAVA_HOME/bin:$PATH"
 
-# 🗂️ Tạo thư mục làm việc
-WORKDIR /app
-
-# 📦 Copy toàn bộ project
-COPY . .
 
 # 🐍 Cài thư viện Python
-RUN pip install --no-cache-dir pyspark python-dotenv kafka-python
+RUN pip install --no-cache-dir \
+    pyspark==3.5.1 \
+    kafka-python \
+    python-dotenv
 
-# 🚀 Lệnh mặc định nếu cần
-CMD tail -f /dev/null
+# 📁 Copy mã nguồn vào container
+WORKDIR /app
+COPY . .
+
+# 🚀 Mặc định chạy chương trình
+CMD ["tail -f /dev/null"]

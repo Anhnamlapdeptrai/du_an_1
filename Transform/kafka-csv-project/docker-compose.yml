@@ -183,8 +183,10 @@ services:
 
   cassandra:
     image: cassandra:4.0
+    container_name: cassandra
     ports:
       - "9042:9042"
+   
     environment:
       CASSANDRA_START_RPC: "true"
       CASSANDRA_RPC_PORT: 9042
@@ -196,6 +198,25 @@ services:
       CASSANDRA_RACK: "rack1"
     networks:
       - default
+  
+  cassandra-web:
+    image: ipushc/cassandra-web
+    container_name: cassandra-web
+    restart: unless-stopped
+    depends_on:
+      - cassandra
+    environment:
+      - CASSANDRA_HOST=cassandra
+      - CASSANDRA_PORT=9042
+      - CASSANDRA_USER=cassandra
+      - CASSANDRA_PASSWORD=cassandra
+    ports:
+      - "3001:3001"
+
+  
+    networks:
+      - default
+
 
 
 networks:
