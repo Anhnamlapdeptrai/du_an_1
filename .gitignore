@@ -37,3 +37,7 @@ venv/
 # ========== SYSTEM ==========
 .DS_Store
 Thumbs.db
+
+create-topictest.sh
+setup-network.sh
+start.sh
