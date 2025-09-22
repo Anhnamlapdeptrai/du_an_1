@@ -1,11 +1,39 @@
+# ========== AIRFLOW ==========
+# Bỏ log, cache, plugin của Airflow
 airflow-2/workflow/logs/
 airflow-2/workflow/dags/__pycache__/
 airflow-2/workflow/plugins/
+
+# ========== EXTRACT ==========
+# Bỏ file script test/tạm thời
 Extract/cao1.py
-Transform/kafka-csv-project/consumer/
+
+
+# Bỏ log trong load
 Transform/kafka-csv-project/load/*log
+
+# Bỏ các script thử nghiệm trong load
 Transform/kafka-csv-project/load/stream1.py
 Transform/kafka-csv-project/load/stream3.py
 Transform/kafka-csv-project/load/stream4.py
 Transform/kafka-csv-project/load/test.py
+
+# Bỏ file môi trường (chứa secret)
 Transform/kafka-csv-project/load/.env
+
+# ========== PYTHON ==========
+# Cache Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+.env/
+
+# ========== IDE ==========
+.vscode/
+.idea/
+
+# ========== SYSTEM ==========
+.DS_Store
+Thumbs.db
