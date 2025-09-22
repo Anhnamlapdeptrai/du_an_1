@@ -4,7 +4,6 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import java.util.Properties;
-
 import org.apache.commons.csv.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Map;
@@ -27,17 +26,17 @@ public class KafkaCsvProducer {
         props.put("enable.idempotence", "true");
         props.put("max.in.flight.requests.per.connection", 5);
 
-        Producer<String, String> producer = new KafkaProducer<>(props);
+        Producer<String, String> producer = new KafkaProducer<>(props); // tạo producer vs data là string 
         ObjectMapper objectMapper = new ObjectMapper();
 
         try (
-            Reader reader = new FileReader("/app/data/FPT.csv");
-            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
+            Reader reader = new FileReader("/app/data/FPT.csv"); 
+            CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());// định dạng theo pandas của python
         ) {
             int count = 0;
             for (CSVRecord record : csvParser) {
                 String Ngay = record.get("Ngay"); // dùng ngày làm key
-
+                // chuyển qua làm json 
                 Map<String, String> rowMap = new HashMap<>();
                 for (String header : csvParser.getHeaderNames()) {
                     rowMap.put(header, record.get(header));
@@ -53,9 +52,9 @@ public class KafkaCsvProducer {
                 ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, Ngay, jsonValue);
                 producer.send(producerRecord, (metadata, exception) -> {
                     if (exception != null) {
-                        System.out.println("❌ Gửi lỗi: " + exception.getMessage());
+                        System.out.println(" Gửi lỗi: " + exception.getMessage());
                     } else {
-                        System.out.println("✅ Gửi thành công! Topic: " + metadata.topic() +
+                        System.out.println(" Gửi thành công! Topic: " + metadata.topic() +
                                            ", Partition: " + metadata.partition() +
                                            ", Offset: " + metadata.offset());
                     }
@@ -64,10 +63,10 @@ public class KafkaCsvProducer {
                 Thread.sleep(100); // chậm lại để dễ nhìn log
             }
         } catch (IOException e) {
-            System.err.println("❌ File IO lỗi: " + e.getMessage());
+            System.err.println(" File IO lỗi: " + e.getMessage());
             e.printStackTrace();
         } catch (InterruptedException e) {
-            System.err.println("❌ Lỗi sleep: " + e.getMessage());
+            System.err.println(" Lỗi sleep: " + e.getMessage());
         }
 
         producer.flush();

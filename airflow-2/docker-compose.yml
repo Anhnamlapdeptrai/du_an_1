@@ -1,0 +1,100 @@
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: postgres-airflow
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+
+  pgadmin:
+    image: dpage/pgadmin4:8.6
+    container_name: pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pgadmin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+
+  airflow-init:
+    container_name: airflow-init
+    image: apache/airflow:2.8.1
+    depends_on:
+      - postgres
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db init &&
+        airflow users create \
+          --username admin \
+          --firstname Data \
+          --lastname Engineer \
+          --role Admin \
+          --email admin@airflow.com \
+          --password admin
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__CORE__FERNET_KEY: "hW2g6hyo6c8Ckz4Y3tFSFcIYZ_0fRbUujhBToK9uHRw="
+    user: "50000:0"
+    volumes:
+      - ./workflow/dags:/opt/airflow/dags
+      - ./workflow/logs:/opt/airflow/logs
+      - ./workflow/plugins:/opt/airflow/plugins
+      - ../Extract:/opt/airflow/Extract
+      - ../Transform:/opt/airflow/Transform
+
+  airflow-webserver:
+    image: apache/airflow:2.8.1
+    container_name: airflow-webserver
+    restart: always
+    depends_on:
+      - airflow-init
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__CORE__FERNET_KEY: "hW2g6hyo6c8Ckz4Y3tFSFcIYZ_0fRbUujhBToK9uHRw="
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      PYTHONPATH: /opt/airflow
+    user: "50000:0"
+    volumes:
+      - ./workflow/dags:/opt/airflow/dags
+      - ./workflow/logs:/opt/airflow/logs
+      - ./workflow/plugins:/opt/airflow/plugins
+      - ../Extract:/opt/airflow/Extract
+      - ../Transform:/opt/airflow/Transform
+    ports:
+      - "8080:8080"
+    command: webserver
+
+  airflow-scheduler:
+    image: apache/airflow:2.8.1
+    container_name: airflow-scheduler
+    restart: always
+    depends_on:
+      - airflow-init
+    environment:
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres:5432/airflow
+      AIRFLOW__CORE__FERNET_KEY: "hW2g6hyo6c8Ckz4Y3tFSFcIYZ_0fRbUujhBToK9uHRw="
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      PYTHONPATH: /opt/airflow
+    user: "50000:0"
+    volumes:
+      - ./workflow/dags:/opt/airflow/dags
+      - ./workflow/logs:/opt/airflow/logs
+      - ./workflow/plugins:/opt/airflow/plugins
+      - ../Extract:/opt/airflow/Extract
+      - ../Transform:/opt/airflow/Transform
+    command: scheduler
+
+volumes:
+  postgres_data:

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 COMPOSE_FILES=(
-    "/home/lapnguyen/du_an/airflow/docker-compose.yml"
+    "/home/lapnguyen/du_an/airflow-2/docker-compose.yml"
     "/home/lapnguyen/du_an/Transform/kafka-csv-project/docker-compose.yml"
     "/home/lapnguyen/du_an/Extract/docker-compose.yml"
 )

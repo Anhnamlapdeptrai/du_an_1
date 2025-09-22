@@ -1,0 +1,11 @@
+airflow-2/workflow/logs/
+airflow-2/workflow/dags/__pycache__/
+airflow-2/workflow/plugins/
+Extract/cao1.py
+Transform/kafka-csv-project/consumer/
+Transform/kafka-csv-project/load/*log
+Transform/kafka-csv-project/load/stream1.py
+Transform/kafka-csv-project/load/stream3.py
+Transform/kafka-csv-project/load/stream4.py
+Transform/kafka-csv-project/load/test.py
+Transform/kafka-csv-project/load/.env
