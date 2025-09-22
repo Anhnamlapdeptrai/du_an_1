@@ -3,8 +3,8 @@ import pandas as pd
 import os
 import time
 def get_data_json(symbol="FPT", page=1, retries=5, delay=1):
-    print(f"🔍 Đang lấy {symbol}, trang {page}")
-    url = "https://cafef.vn/du-lieu/Ajax/PageNew/DataHistory/PriceHistory.ashx"
+    print(f"💪 Đang lấy {symbol}, trang {page}")
+    url = ".https://cafef.vn/du-lieu/Ajax/PageNew/DataHistory/PriceHistory.ashx"
     params = {
         "Symbol": symbol,
         "PageIndex": page,
@@ -18,7 +18,7 @@ def get_data_json(symbol="FPT", page=1, retries=5, delay=1):
 
             data = res.json()
             if not data.get("Success", False): # nếu ko có key thì mặc định là False
-                print(f" Dữ liệu không thành công với {symbol}, trang {page}")
+                print(f" 👏 Dữ liệu không thành công với {symbol}, trang {page}")
                 return pd.DataFrame()
 
             rows = data.get("Data", {}).get("Data", [])
@@ -32,7 +32,7 @@ def get_data_json(symbol="FPT", page=1, retries=5, delay=1):
             return df
 
         except Exception as e:
-            print(f" Lỗi '{e}' – thử lại lần {attempt + 1}/{retries}")
+            print(f" 🙏 Lỗi '{e}' – thử lại lần {attempt + 1}/{retries}")
             time.sleep(delay + 1)  # nghỉ lâu hơn một chút khi có lỗi
 
     print(f" Thất bại sau {retries} lần thử với {symbol}, trang {page}")
@@ -60,11 +60,11 @@ def get_all_data(symbol="FPT", page=60):
         full_df = pd.concat([old_df, new_df], ignore_index=True)
         full_df = full_df.drop_duplicates(subset=["Ngay"]).reset_index(drop=True)# drop_duplicates giữ lại bản ghi đầu tiên, sau đó reset index,nếu không có dữ liệu mới thì sẽ không ghi đè lên file cũ,subset=["Ngay"] là cột ngày, nếu có dữ liệu mới thì sẽ ghi đè lên file cũ
         full_df.to_csv(save_path, index=False) 
-        print(f"Đã lưu dữ liệu {symbol} vào {save_path}")
+        print(f" 👽 Đã lưu dữ liệu {symbol} vào {save_path}")
     else:
         print(f"Không có dữ liệu mới cho {symbol}")
 
 
 if __name__ == "__main__":
     get_all_data("FPT")
-    print(" Hoàn tất!")
+    print("😵‍💫 Hoàn tất!")
