@@ -65,13 +65,14 @@ services:
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       PYTHONPATH: /opt/airflow
-    user: "50000:0"
+
     volumes:
       - ./workflow/dags:/opt/airflow/dags
       - ./workflow/logs:/opt/airflow/logs
       - ./workflow/plugins:/opt/airflow/plugins
       - ../Extract:/opt/airflow/Extract
       - ../Transform:/opt/airflow/Transform
+      - /var/run/docker.sock:/var/run/docker.sock  
     ports:
       - "8080:8080"
     command: webserver
@@ -87,13 +88,14 @@ services:
       AIRFLOW__CORE__FERNET_KEY: "hW2g6hyo6c8Ckz4Y3tFSFcIYZ_0fRbUujhBToK9uHRw="
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       PYTHONPATH: /opt/airflow
-    user: "50000:0"
+
     volumes:
       - ./workflow/dags:/opt/airflow/dags
       - ./workflow/logs:/opt/airflow/logs
       - ./workflow/plugins:/opt/airflow/plugins
       - ../Extract:/opt/airflow/Extract
       - ../Transform:/opt/airflow/Transform
+      - /var/run/docker.sock:/var/run/docker.sock  
     command: scheduler
 
 volumes:

@@ -45,9 +45,9 @@ public class KafkaCsvProducer {
                 String jsonValue = objectMapper.writeValueAsString(rowMap);
                 String topic = "du_an_dau";
 
-                System.out.println("📤 Đang gửi record số " + (++count));
-                System.out.println("   🗝️ Key: " + Ngay);
-                System.out.println("   📦 Value: " + jsonValue);
+                System.out.println(" Đang gửi record số " + (++count));
+                System.out.println("    Key: " + Ngay);
+                System.out.println("    Value: " + jsonValue);
 
                 ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, Ngay, jsonValue);
                 producer.send(producerRecord, (metadata, exception) -> {
@@ -71,6 +71,6 @@ public class KafkaCsvProducer {
 
         producer.flush();
         producer.close();
-        System.out.println("🏁 Đã gửi xong toàn bộ dữ liệu từ CSV.");
+        System.out.println(" Đã gửi xong toàn bộ dữ liệu từ CSV.");
     }
 }

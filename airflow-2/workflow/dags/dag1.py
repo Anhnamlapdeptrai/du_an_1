@@ -39,7 +39,14 @@ t2 = PythonOperator(
 
 t3 = BashOperator(
     task_id="transform_data",
-    bash_command="docker exec -it producer-2 java -jar /app/producer/target/kafka-csv-producer-1.0.0-jar-with-dependencies.jar",
+    bash_command="""
+        docker run --rm \
+        --network=your-network \
+        -v /home/lapnguyen/du_an/Transform/kafka-csv-project/producer:/app \
+        -v /home/lapnguyen/du_an/Transform/kafka-csv-project/data:/app/data \
+        openjdk:17 \
+        java -jar /app/target/kafka-csv-producer-1.0.0-jar-with-dependencies.jar
+        """,
     dag=dag,
 )
 

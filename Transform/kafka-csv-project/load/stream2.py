@@ -10,7 +10,7 @@ from pyspark.sql.types import StructType, StructField, StringType, DoubleType, L
 from pyspark.sql.types import (
     StructType, StructField,
     StringType, DoubleType, LongType,
-    TimestampType, DateType   # 🟢 thêm dòng này
+    TimestampType, DateType   
 )
 logging.basicConfig(level=logging.INFO, # mức độ ghi log
                     format='%(asctime)s:%(funcName)s:%(levelname)s:%(message)s', # định dạng log thời gian , tên hàm, mức độ log và thông điệp
@@ -53,18 +53,18 @@ def create_spark_session():
             .getOrCreate()
 
         spark.sparkContext.setLogLevel("INFO") # nếu ko chạy thì in 
-        logging.info("✅ Spark session created successfully.")
+        logging.info("Spark session created successfully.")
         return spark
 
     except Exception as e:
-        logging.error(f"❌ Couldn't create Spark session: {e}")
+        logging.error(f" Couldn't create Spark session: {e}")
         return None
 def create_initial_dataframe(spark_session):
     try:
         kafka_bootstrap_servers = os.getenv("KAFKA_BOOTSTRAP_SERVERS")
         kafka_topic = os.getenv("KAFKA_TOPIC")
 
-        # 🧩 Định nghĩa schema cho JSON
+        #  Định nghĩa schema cho JSON
         schema = StructType([
             StructField("Ngay", StringType(), True),          # ban đầu đọc dạng string
             StructField("GiaDieuChinh", StringType(), True),
@@ -80,7 +80,7 @@ def create_initial_dataframe(spark_session):
             StructField("code", StringType(), True)
         ])
 
-        # 🚀 Đọc Kafka
+        #  Đọc Kafka
         df = (spark_session.readStream
             .format("kafka")
             .option("kafka.bootstrap.servers", kafka_bootstrap_servers)
@@ -88,12 +88,12 @@ def create_initial_dataframe(spark_session):
             .option("startingOffsets", "earliest")
             .load())
 
-        # 🧩 Parse JSON
+        #  Parse JSON
         df = df.selectExpr("CAST(value AS STRING) as raw") \
                .withColumn("jsonData", from_json(col("raw"), schema)) \
                .select("jsonData.*")
 
-        # 🔧 Chuyển đổi kiểu dữ liệu
+        #  Chuyển đổi kiểu dữ liệu
         df = df.withColumn("ngay", to_date(col("Ngay"), "dd/MM/yyyy")) \
                .withColumn("giadieuchinh", col("GiaDieuChinh").cast("double")) \
                .withColumn("giadongcua", col("GiaDongCua").cast("double")) \
@@ -107,16 +107,16 @@ def create_initial_dataframe(spark_session):
                .withColumn("thaydoi", regexp_extract(col("ThayDoi"), r"([0-9.]+)", 1).cast("double")) \
                .withColumn("code", col("code"))
 
-        # 🧹 Lọc key
+        # Lọc key
         df = df.filter(col("code").isNotNull() & col("ngay").isNotNull())
         df = df.dropDuplicates(["code", "ngay"])
 
         df.printSchema()
-        logging.info("✅ Initial streaming DataFrame schema created successfully (JSON).")
+        logging.info(" Initial streaming DataFrame schema created successfully (JSON).")
         return df
 
     except Exception as e:
-        logging.error(f"❌ Couldn't create initial DataFrame: {e}")
+        logging.error(f" Couldn't create initial DataFrame: {e}")
         return None
 
 def start_streaming(df):
@@ -128,19 +128,18 @@ def start_streaming(df):
             .option("keyspace", "spark_streaming")
             .option("table", "csdl_anhlap")
             .start())
-        logging.info("🚀 Streaming query started and writing to Cassandra.")
+        logging.info(" Streaming query started and writing to Cassandra.")
         query.awaitTermination()
     except Exception as e:
-        logging.error(f"❌ Streaming failed: {e}")
-
-
-
+        logging.error(f" Streaming failed: {e}")
     return query.awaitTermination()
+
+
 def write_streaming_data():
     spark = create_spark_session()
     df = create_initial_dataframe(spark)
     if df is None:
-        logging.error("❌ Failed to create initial DataFrame. Exiting.")
+        logging.error(" Failed to create initial DataFrame. Exiting.")
         return
     start_streaming(df)
 
