@@ -25,7 +25,7 @@ load_dotenv()
 
 def create_spark_session():
     try:
-        # 📥 Lấy biến từ .env
+        # Lấy biến từ .env
         app_name = os.getenv("APP_NAME")
         cassandra_host = os.getenv("CASSANDRA_HOST")
         cassandra_port = os.getenv("CASSANDRA_PORT")
@@ -35,14 +35,14 @@ def create_spark_session():
         kafka_version = os.getenv("KAFKA_CONNECTOR_VERSION")
         scala_version = os.getenv("SCALA_VERSION")
 
-        # 🧩 Ghép chuỗi jar
+        #  Ghép chuỗi jar
         jars = ",".join([
             f"com.datastax.spark:spark-cassandra-connector_{scala_version}:{cassandra_version}",
             f"org.apache.spark:spark-sql-kafka-0-10_{scala_version}:{kafka_version}"
         ])
 
 
-        # 🚀 Tạo SparkSession
+        #  Tạo SparkSession
         spark = SparkSession.builder \
             .appName(app_name) \
             .config("spark.jars.packages", jars) \

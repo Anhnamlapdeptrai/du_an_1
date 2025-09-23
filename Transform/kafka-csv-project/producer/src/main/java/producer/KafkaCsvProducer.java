@@ -45,16 +45,16 @@ public class KafkaCsvProducer {
                 String jsonValue = objectMapper.writeValueAsString(rowMap);
                 String topic = "du_an_dau";
 
-                System.out.println(" Đang gửi record số " + (++count));
-                System.out.println("    Key: " + Ngay);
-                System.out.println("    Value: " + jsonValue);
+                System.out.println(" 😏 Đang gửi record số " + (++count));
+                System.out.println(" 😱  Key: " + Ngay);
+                System.out.println(" 👻  Value: " + jsonValue);
 
                 ProducerRecord<String, String> producerRecord = new ProducerRecord<>(topic, Ngay, jsonValue);
                 producer.send(producerRecord, (metadata, exception) -> {
                     if (exception != null) {
                         System.out.println(" Gửi lỗi: " + exception.getMessage());
                     } else {
-                        System.out.println(" Gửi thành công! Topic: " + metadata.topic() +
+                        System.out.println(" 🌚 Gửi thành công! Topic: " + metadata.topic() +
                                            ", Partition: " + metadata.partition() +
                                            ", Offset: " + metadata.offset());
                     }
@@ -63,14 +63,14 @@ public class KafkaCsvProducer {
                 Thread.sleep(100); // chậm lại để dễ nhìn log
             }
         } catch (IOException e) {
-            System.err.println(" File IO lỗi: " + e.getMessage());
+            System.err.println("🤡 File IO lỗi: " + e.getMessage());
             e.printStackTrace();
         } catch (InterruptedException e) {
-            System.err.println(" Lỗi sleep: " + e.getMessage());
+            System.err.println("😴 Lỗi sleep: " + e.getMessage());
         }
 
         producer.flush();
         producer.close();
-        System.out.println(" Đã gửi xong toàn bộ dữ liệu từ CSV.");
+        System.out.println("🌚 Đã gửi xong toàn bộ dữ liệu từ CSV.");
     }
 }
