@@ -141,7 +141,7 @@ services:
   #     - default
   spark-stream:
     build: 
-      context: ./stream_data
+      context: ./load
       dockerfile: Dockerfile
     container_name: spark-stream
     depends_on:
@@ -167,7 +167,7 @@ services:
     # 👇 Optional: Run manually instead
     command: tail -f /dev/null
     volumes:
-      - ./stream_data:/app
+      - ./load:/app
 
   cassandra:
     image: cassandra:4.0

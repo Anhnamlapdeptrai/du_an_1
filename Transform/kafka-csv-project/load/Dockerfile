@@ -1,17 +1,17 @@
-FROM python:3.11-slim
+FROM openjdk:17-slim
 
-#  Cài Java Runtime (JRE) thay vì JDK cho nhẹ và không lỗi
+# Cài Python + tool cần thiết
 RUN apt-get update && apt-get install -y \
-    openjdk-17-jre-headless \
-    netcat-openbsd \
+    python3 python3-pip netcat-openbsd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+# Set Python mặc định (symlink nếu chưa có)
+RUN [ ! -e /usr/bin/python ] && ln -s /usr/bin/python3 /usr/bin/python || true
 
-# Thiết lập JAVA_HOME để PySpark nhận Java
+# JAVA_HOME cho PySpark
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
 ENV PATH=$JAVA_HOME/bin:$PATH
 ENV PYSPARK_SUBMIT_ARGS="--driver-java-home=/usr/lib/jvm/java-17-openjdk-amd64 pyspark-shell"
-
 
 # Cài thư viện Python
 RUN pip install --no-cache-dir \
@@ -19,9 +19,9 @@ RUN pip install --no-cache-dir \
     kafka-python \
     python-dotenv
 
-#  Copy mã nguồn vào container
+# Copy source
 WORKDIR /app
 COPY . .
 
-# Mặc định chạy chương trình
-CMD ["tail -f /dev/null"]
+# Container chạy giữ cho sống
+CMD ["tail", "-f", "/dev/null"]
