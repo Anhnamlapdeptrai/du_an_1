@@ -4,7 +4,6 @@ import json
 from datetime import datetime
 import re
 
-# --- KAFKA CONSUMER ---
 consumer = KafkaConsumer(
     "du_an_dau",
     bootstrap_servers=["kafka:9092"],
